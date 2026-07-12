@@ -7,6 +7,15 @@ const userSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    username: {
+      type: String,
+      required: true,
+      unique: true,
+      lowercase: true,
+      trim: true,
+      minlength: 3,
+      maxlength: 20,
+    },
     email: {
       type: String,
       required: true,
@@ -17,6 +26,16 @@ const userSchema = new mongoose.Schema(
     password: {
       type: String,
       required: true,
+    },
+    friends: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
+    usernameChangedAt: {
+      type: Date,
+      default: Date.now,
     },
   },
   {

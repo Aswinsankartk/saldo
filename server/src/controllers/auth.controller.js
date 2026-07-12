@@ -4,7 +4,7 @@ import { generateToken } from "../utils/generateToken.js";
 
 export const registerUser = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, username, email, password } = req.body;
     if (!name?.trim() || !email?.trim() || !password?.trim()) {
       return res.status(400).json({
         success: false,
@@ -21,6 +21,7 @@ export const registerUser = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
     const user = await User.create({
       name,
+      username,
       email,
       password: hashedPassword,
     });

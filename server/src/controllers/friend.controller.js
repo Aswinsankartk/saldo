@@ -1,5 +1,6 @@
 import FriendRequest from "../models/friendRequest.model.js";
 import User from "../models/user.model.js";
+import { acceptRequest } from "../services/friend.service.js";
 
 export const sendFriendRequest = async (req, res) => {
   const senderId = req.user._id;
@@ -11,10 +12,10 @@ export const sendFriendRequest = async (req, res) => {
     });
   }
   const receiver = await User.findById(receiverId);
-  if (!receiverExist) {
+  if (!receiver) {
     return res.status(404).json({
       success: false,
-      message: "Receiver invalid",
+      message: "User not found",
     });
   }
   if (senderId.toString() === receiverId) {
@@ -23,21 +24,47 @@ export const sendFriendRequest = async (req, res) => {
       message: "User cannot send request to themselves",
     });
   }
-  const duplicateRequest = await FriendRequest.findOne({
-    sender: senderId,
-    receiver: receiverId,
-    status: "pending",
+  const isFriend = await User.findOne({
+    _id: senderId,
+    friends: receiverId,
   });
-  if (duplicateRequest) {
-    return res.status(400).json({
+  if (isFriend) {
+    return res.status(409).json({
       success: false,
-      message: "User already sent a request",
+      message: "You are already friends",
     });
   }
   const reverseRequest = await FriendRequest.findOne({
     sender: receiverId,
     receiver: senderId,
     status: "pending",
+  });
+  if (reverseRequest) {
+    await acceptRequest(reverseRequest);
+
+    return res.status(200).json({
+      success: true,
+      message: "Friend request accepted successfully",
+    });
+  }
+  const duplicateRequest = await FriendRequest.findOne({
+    sender: senderId,
+    receiver: receiverId,
+    status: "pending",
+  });
+  if (duplicateRequest) {
+    return res.status(409).json({
+      success: false,
+      message: "User already sent a request",
+    });
+  }
+  await FriendRequest.create({
+    sender: senderId,
+    receiver: receiverId,
+  });
+  return res.status(201).json({
+    success: true,
+    message: "Friend request sent successfully",
   });
 };
 
@@ -62,18 +89,7 @@ export const acceptFriendRequest = async (req, res) => {
       message: "You are not authorized to accept this request",
     });
   }
-  friendRequest.status = "accepted";
-  await friendRequest.save();
-  await User.findByIdAndUpdate(friendRequest.receiver, {
-    $addToSet: {
-      friends: friendRequest.sender,
-    },
-  });
-  await User.findByIdAndUpdate(friendRequest.sender, {
-    $addToSet: {
-      friends: friendRequest.receiver,
-    },
-  });
+  await acceptRequest(friendRequest);
   return res.status(200).json({
     success: true,
     message: "Request Accepted",
@@ -109,6 +125,25 @@ export const rejectFriendRequest = async (req, res) => {
   });
 };
 
-export const getPendingRequests = async () => {};
+export const getPendingRequests = async (req, res) => {
+  const pendingRequests = await FriendRequest.find({
+    receiver: req.user._id,
+    status: "pending",
+  }).populate("sender", "name username");
+  return res.status(200).json({
+    success: true,
+    message: "Pending requests fetched successfully",
+    data: pendingRequests,
+  });
+};
 
-export const getFriends = async () => {};
+export const getFriends = async (req, res) => {
+  const user = await User.findById(req.user._id).populate(
+    "friends",
+    "name username",
+  );
+  return res.status(200).json({
+    success: true,
+    data: user.friends,
+  });
+};

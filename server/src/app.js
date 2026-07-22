@@ -2,6 +2,7 @@ import express from "express";
 import authRoutes from "./routes/auth.routes.js";
 import userRoutes from "./routes/user.routes.js";
 import friendRoutes from "./routes/friend.routes.js";
+import groupRoutes from "./routes/group.routes.js";
 import { errorHandler } from "./middleware/error.middleware.js";
 
 const app = express();
@@ -13,6 +14,8 @@ app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 
 app.use("/api/friends", friendRoutes);
+
+app.use("/api/groups", groupRoutes);
 
 app.use(errorHandler);
 

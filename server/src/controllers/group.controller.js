@@ -174,3 +174,46 @@ export const joinGroup = async (req, res) => {
     });
   }
 };
+
+export const leaveGroup = async (req, res) => {
+  try {
+    const groupId = req.params.id;
+    const userId = req.user._id;
+    const group = await Group.findById(groupId);
+    if (!group) {
+      return res.status(404).json({
+        success: false,
+        message: "Group does not exist",
+      });
+    }
+    const isMember = group.members.some((member) => member.equals(userId));
+    if (!isMember) {
+      return res.status(403).json({
+        success: false,
+        message: "You are not a member of this group",
+      });
+    }
+    if (group.owner.equals(userId)) {
+      return res.status(403).json({
+        success: false,
+        message: "Transfer ownership before leaving the group",
+      });
+    }
+    await group.updateOne({
+      $pull: {
+        members: userId,
+      },
+    });
+    return res.status(204).json({
+      success: true,
+      message: "Left group successfully",
+    });
+  } catch (error) {
+    console.error(error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+  }
+};

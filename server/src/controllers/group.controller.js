@@ -116,3 +116,61 @@ export const getGroupById = async (req, res) => {
     });
   }
 };
+
+export const joinGroup = async (req, res) => {
+  try {
+    const inviteCode = req.body.inviteCode?.trim();
+    const userId = req.user._id;
+    if (!inviteCode) {
+      return res.status(400).json({
+        success: false,
+        message: "Invite Code is required",
+      });
+    }
+    const group = await Group.findOne({
+      inviteCode,
+    });
+    if (!group) {
+      return res.status(404).json({
+        success: false,
+        message: "Group not found",
+      });
+    }
+    const isAlreadyMember = group.members.some((member) =>
+      member.equals(userId),
+    );
+    if (isAlreadyMember) {
+      return res.status(409).json({
+        success: false,
+        message: "You are already a member of this group",
+      });
+    }
+    const updatedGroup = await Group.findByIdAndUpdate(
+      group._id,
+      {
+        $addToSet: { members: userId },
+      },
+      {
+        new: true,
+      },
+    );
+    return res.status(200).json({
+      success: true,
+      message: "Joined group successfully",
+      group: {
+        _id: updatedGroup._id,
+        name: updatedGroup.name,
+        icon: updatedGroup.icon,
+        currency: updatedGroup.currency,
+        memberCount: updatedGroup.members.length,
+      },
+    });
+  } catch (error) {
+    console.error(error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+  }
+};

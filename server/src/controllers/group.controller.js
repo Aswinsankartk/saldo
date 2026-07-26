@@ -217,3 +217,59 @@ export const leaveGroup = async (req, res) => {
     });
   }
 };
+
+export const transferOwner = async (req, res) => {
+  try {
+    const { newOwnerId } = req.body;
+    const requesterId = req.user._id;
+    const groupId = req.params.id;
+    if (!newOwnerId) {
+      return res.status(400).json({
+        success: false,
+        message: "New owner ID required",
+      });
+    }
+    const group = await Group.findById(groupId);
+    if (!group) {
+      return res.status(404).json({
+        success: false,
+        message: "Group does not exist",
+      });
+    }
+    if (!group.owner.equals(requesterId)) {
+      return res.status(403).json({
+        success: false,
+        message: "You are not the owner",
+      });
+    }
+    if (group.owner.equals(newOwnerId)) {
+      return res.status(409).json({
+        success: false,
+        message: "You cannot transfer ownership to yourself",
+      });
+    }
+    const isNewOwnerMember = group.members.some((member) =>
+      member.equals(newOwnerId),
+    );
+    if (!isNewOwnerMember) {
+      return res.status(400).json({
+        success: false,
+        message: "Suggested user is not a member of the group",
+      });
+    }
+    group.owner = newOwnerId;
+    await group.save();
+    return res.status(200).json({
+      success: true,
+      message: "Ownership transferred successfully",
+      owner: group.owner,
+    });
+  } catch (error) {
+    console.error(error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+  }
+};

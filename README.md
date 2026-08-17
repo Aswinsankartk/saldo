@@ -1,52 +1,48 @@
 # Saldo
 
-Saldo is a personal finance app I'm building on the side — mainly to get better at designing and building a full-stack application from scratch, rather than following a tutorial end to end.
+Saldo (it means "balance" in a bunch of languages, seemed fitting) is a personal finance / expense-splitting app I'm building on the side. Not really trying to make the next Splitwise — I just wanted to actually build something full-stack myself instead of following along with another tutorial.
 
-Right now I'm heads-down on the backend: users, friends, groups, and getting the auth right before I touch anything else.
+Backend only for now. I'm being stubborn about getting auth, users, friends and groups solid before I even think about a frontend.
 
-## What it does so far
+## What's working right now
 
-- User registration and login
-- Passwords hashed with bcrypt
-- JWT-based auth
+- Register / login
+- Passwords hashed with bcrypt (obviously not rolling my own)
+- JWT auth
 - Search for other users
-- Send, accept, and reject friend requests
-- Create and manage groups (with members)
+- Friend requests — send, accept, reject
+- Groups — create them, add members, leave, transfer ownership, join via invite code
 
-It's a REST API built with Express, backed by MongoDB/Mongoose.
+It's a REST API, Express + MongoDB/Mongoose behind it.
 
 ## Stack
 
-**Backend:** Node.js, Express, MongoDB, Mongoose, JWT, bcrypt
+Node, Express 5, MongoDB/Mongoose, JWT, bcrypt. Nodemon + dotenv for dev.
 
-**Dev tooling:** Nodemon, dotenv, Git/GitHub
+I picked Express 5 mostly because I wanted to see what changed from v4 — some of the async error handling is nicer.
 
-## How it's organized
+## Structure
 
-```text
+```
 saldo/
 └── server/
-    ├── src/
-    │   ├── config/
-    │   ├── controllers/
-    │   ├── middleware/
-    │   ├── models/
-    │   ├── routes/
-    │   ├── services/
-    │   ├── utils/
-    │   ├── app.js
-    │   └── server.js
-    │
-    ├── .env.example
-    ├── package.json
-    └── package-lock.json
+    └── src/
+        ├── config/
+        ├── controllers/
+        ├── middleware/
+        ├── models/
+        ├── routes/
+        ├── services/
+        ├── utils/
+        ├── app.js
+        └── server.js
 ```
 
-Nothing fancy — models hold the schemas, controllers handle the request logic, routes wire up the endpoints, middleware deals with auth/request processing, and services hold the reusable business logic. Config and utils do what you'd expect.
+Fairly standard MVC split — models are the schemas, controllers handle the actual request logic, routes just wire things to controllers, middleware does auth/validation/error stuff, services hold logic I didn't want sitting inside a controller (mostly the friend-request stuff right now).
 
-## Running it locally
+## Running it
 
-You'll need Node.js, MongoDB, and Git installed.
+You'll need Node and a MongoDB instance (Atlas works fine, that's what I use).
 
 ```bash
 git clone https://github.com/aswinsankartk/saldo.git
@@ -54,46 +50,34 @@ cd saldo/server
 npm install
 ```
 
-Then create a `.env` file inside `server/`:
+Make a `.env` in `server/`:
 
-```env
+```
 PORT=5000
 MONGO_URI=your_mongodb_connection_string
 JWT_SECRET=your_jwt_secret
 ```
 
-Swap in your own Mongo URI and JWT secret.
-
-Start it up:
-
 ```bash
-npm run dev     # development
-npm start       # production
+npm run dev    # nodemon
+npm start
 ```
 
-## Where it's at
+## Where this is going
 
-Still very much a work in progress. I'm adding things feature by feature instead of trying to build everything at once — right now that means auth, users, friendships, and groups are working, but expenses aren't in yet.
-
-Next up, roughly in order:
+Auth, users, friends, groups — done. Expenses are not in yet, which is kind of the whole point of the app, so that's next. Roughly in this order:
 
 - Expense tracking
-- Splitting expenses between people
-- Debt tracking + settlements
-- Better group management
-- A frontend (currently backend-only)
-- Proper validation and error handling
-- Tests
+- Splitting logic (equal splits first, probably custom splits later)
+- Debts / settle-up
+- A frontend, eventually
+- Actual input validation instead of hoping people send the right shape of JSON
+- Tests (I know, I know)
 
-## Why I'm building this
+## Why
 
-There's no shortage of expense-splitting apps out there — I'm not trying to compete with Splitwise. I'm building Saldo because I want to actually understand how these things work under the hood: the auth, the data modeling, how you'd structure debts between multiple people. Once the core is solid, the goal is to make it genuinely useful for splitting costs on trips or with roommates.
-
-## Author
-
-**Aswin Sankar TK**
-GitHub: [@aswinsankartk](https://github.com/aswinsankartk)
+Mostly just wanted to understand how an app like this is actually put together — the auth, the data modeling for who-owes-who, all of it — rather than just consuming an app that already does this. If it ends up being something I can actually use to split rent or trip costs with friends, even better.
 
 ---
 
-Learning project, still under active development.
+Aswin Sankar TK · [@aswinsankartk](https://github.com/aswinsankartk)

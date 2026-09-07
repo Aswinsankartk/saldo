@@ -78,6 +78,7 @@ Auth, users, friends, groups — done. Expenses are not in yet, which is kind of
 
 Mostly just wanted to understand how an app like this is actually put together — the auth, the data modeling for who-owes-who, all of it — rather than just consuming an app that already does this. If it ends up being something I can actually use to split rent or trip costs with friends, even better.
 
----
+## Author
 
-Aswin Sankar TK · [@aswinsankartk](https://github.com/aswinsankartk)
+**Aswin Sankar TK**
+GitHub: [@aswinsankartk](https://github.com/aswinsankartk)
